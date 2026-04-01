@@ -1,10 +1,10 @@
 (function () {
 
     // ── State ──────────────────────────────────────────────────────────────────
-    let gridWidth   = 280;
-    let columnCount = 8;
-    let colWidth    = 114;
-    let gutterWidth = 16;
+    let gridWidth   = 840;
+    let columnCount = 6;
+    let colWidth    = 125;
+    let gutterWidth = 18;
     let marginWidth = 0;
     let lastTyped      = 'width'; // most recently manually typed field
     let colWidthManual    = false;
