@@ -1,0 +1,698 @@
+/* Variables
+------------------------*/
+
+:root {
+	/* Colors */
+	--color-background: #CCCCCC;
+	--color-text: #232323;
+	--color-rule: #ADADAD;
+	--color-column-resolved: #389F3B;
+	--color-gutter-resolved: #6AAE6C;
+	--color-column-unresolved: #F7806E;
+	--color-gutter-unresolved: #E99A8E;
+	/* Typography */
+	--font-stack: Booton, 'Helvetica Neue', Arial, sans-serif;
+	/* Font Sizes */
+	--font-small-size: 1.1rem;
+	--font-small-line-height: calc(14 / 11 * 1em);
+	--font-large-size: 1.8rem;
+	--font-large-line-height: calc(22 / 18 * 1em); /* Could do 1.222... but this is more consistent across browsers */
+	/* Spacing */
+	--space-viewport-margin: 2rem;
+	--space-large-gap: 3.5rem;
+	--space-small-gap: 0.8rem;
+	--space-tiny-gap: 0.2rem;
+	/* Control Shapes */
+	--fixed-grid-unit: 2.7rem;
+	--control-button-radius: 0.5rem;
+	/* Control Background Colors */
+	--control-color-bg-enabled-off: #FFFFFF;
+	--control-color-bg-enabled-on: #232323;
+	--control-color-bg-enabled-unresolved: #F7806E;
+	--control-color-bg-enabled-off-hover: #F2F2F2;
+	--control-color-bg-enabled-on-hover: #383838;
+	--control-color-bg-enabled-off-active: #E8E8E8;
+	--control-color-bg-enabled-on-active: #232323;
+	--control-color-bg-disabled-off: #E0E0E0;
+	--control-color-bg-disabled-on: #B9B9B9;
+	--control-color-bg-disabled-unresolved: #DAB3AD;
+	/* Control Text Colors */
+	--control-color-text-enabled-off: #232323;
+	--control-color-text-enabled-on: #FFFFFF;
+	--control-color-text-enabled-unresolved: #FFFFFF;
+	--control-color-text-disabled-off: #999999;
+	--control-color-text-disabled-on: #DBDBDB;
+	--control-color-text-disabled-unresolved: #EDE0DE;
+		/* Transitions */
+	--transition-grid: 0.12s ease;
+	--transition-fade: 0.15s;
+}
+
+/* Typography
+------------------------*/
+
+@font-face {
+	font-family: Booton;
+	src: url('Booton-Regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: fallback;
+}
+@font-face {
+	font-family: Booton;
+	src: url('Booton-SemiBold.woff2') format('woff2');
+	font-weight: 600;
+	font-style: normal;
+	font-display: fallback;
+}
+html {
+	font-size: 62.5%; /* Base font size of 10 pixels */
+	font-family: var(--font-stack);
+	font-feature-settings: "ss02" 1, "ss06" 1;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+h1 {
+	font-size: var(--font-small-size);
+	margin: 0;
+	text-box: trim-both cap alphabetic;
+	letter-spacing: 2%;
+	align-self: end;
+}
+.variable-heading {
+	font-size: var(--font-small-size);
+	line-height: var(--font-small-line-height);
+	letter-spacing: 2%;
+	margin: 0;
+	border-block-end: 1px solid var(--color-rule);
+	margin-block-end: var(--space-small-gap);
+	text-box: trim-both cap alphabetic;
+	padding-block-end: var(--space-small-gap);
+}
+.grid-heading .variable-heading {
+	grid-column: 1 / 4;
+	border-block-end: none;
+	margin-block-end: 0;
+}
+#preview-total-width.visible, #preview-inner-width.visible, #preview-scale.visible {
+	opacity: 1;
+	visibility: visible;
+}
+.grid-heading {
+	border-block-end: 1px solid var(--color-rule);
+}
+
+/* Layout 
+------------------------*/
+
+html {
+	background-color: var(--color-background);
+	color: var(--color-text);
+}
+body {
+	overflow-x: hidden; /* Avoid displaying horizontal scrollbar when resizing window */
+	margin: var(--space-viewport-margin);
+	transition: margin var(--transition-fade); /* Just for manual resizing of window */
+	display: grid;
+	grid-template-rows: 1fr auto;
+	min-height: calc(100dvh - (var(--space-viewport-margin) * 2));
+	row-gap: var(--space-large-gap);
+}
+main {
+	display: grid;
+	grid-template-rows: auto 1fr;
+	row-gap: var(--space-large-gap);
+	min-height: 0;
+}
+.calculator-container { /* Needed for toggling visibility of About section */
+	position: relative;
+}
+
+/* Header */
+
+header {
+	grid-row: 2;
+	display: grid;
+	grid-template-columns: 0.9rem auto auto;
+	align-content: end;
+	height: 0.8rem;
+	column-gap: 0.7rem;
+}
+.dot {
+	background-color: var(--color-text);
+	width: 1rem;
+	height: 1rem;
+	border-radius: 0.5rem;
+	margin-block-end: -0.1rem;
+	margin-inline-start: -0.1rem;
+}
+.logo {
+	justify-self: start;
+}
+.about-link {
+	margin-inline-start: auto;
+	background: none;
+	border: none;
+	font-weight: bold;
+	border-radius: 0;
+	padding: 0;
+	font-size: var(--font-small-size);
+	text-box: trim-both cap alphabetic;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	cursor: pointer;
+	letter-spacing: 2%;
+	color: var(--color-text);
+}
+.about-link span {
+	text-box: trim-both cap alphabetic;
+}
+
+/* Grid Calculator */
+
+.grid-calculator {
+	display: grid;
+	grid-template-columns: repeat(29, var(--fixed-grid-unit)) auto;
+	column-gap: var(--space-tiny-gap);
+	row-gap: var(--space-large-gap);
+}
+.grid-variable {
+	display: grid;
+	grid-template-columns: subgrid;
+	grid-column-start: span 15;
+	align-content: start; /* Rows as tall as children */
+}
+.variable-heading {
+	grid-column: 1 / -1;
+}
+.variable-total-width .variable-heading,
+.variable-column-width .variable-heading,
+.variable-margin .variable-heading { /* Pull the right side over 2px to remove the gap between lines */
+	margin-inline-end: calc(-1 * var(--space-tiny-gap));
+}
+.values {
+	grid-column: span 14;
+	display: grid;
+	grid-template-columns: subgrid;
+}
+.values button {
+	grid-column: span 2;
+}
+.no-options {
+	font-size: var(--font-large-size);
+	line-height: var(--fixed-grid-unit);
+	grid-column: 1 / -1;
+}
+.variable-controls {
+	grid-column: 1 / -1;
+	display: grid;
+	grid-template-columns: subgrid;
+	grid-template-rows: var(--fixed-grid-unit) var(--fixed-grid-unit);
+	gap: var(--space-tiny-gap);
+	margin-block-end: var(--space-tiny-gap);
+}
+.grid-variable-value {
+	grid-column: span 3;
+}
+.button-auto {
+	grid-column: span 2;
+}
+.button-manual {
+	visibility: hidden; /* Hide it because this mode may not be useful */
+	grid-column: span 3;
+}
+.button-match-gutter {
+	grid-column: span 5;
+}
+.button-trim {
+	grid-column: span 2;
+}
+
+/* Grid State */
+
+.grid-state-container {
+	display: grid;
+	grid-auto-flow: column;
+	justify-content: start;
+	align-items: center;
+	column-gap: 0.4rem;
+	grid-column: 1 / -1;
+	grid-row-start: 2; /* Occupy same grid cell */
+	height: var(--fixed-grid-unit);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity var(--transition-fade), visibility var(--transition-fade);
+}
+.grid-state-container.visible {
+	opacity: 1;
+	visibility: visible;
+}
+.grid-state-container svg path { /* Inherit text color */
+	stroke: var(--color-text);
+}
+.grid-status {
+	font-size: var(--font-large-size);
+	margin: 0;
+	text-box: trim-both cap alphabetic;
+}
+
+/* Links 
+------------------------*/
+
+a:link, a:visited, a:hover, a:active {
+	color: var(--color-text);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.2rem;
+}
+
+/* Controls
+------------------------*/
+
+/* Hide number input spin buttons */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button { /* Hide in Safari and Chrome */
+	-webkit-appearance: none;
+}
+input[type=number] { /* Hide in Firefox */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* General Buttons */
+
+.button-general {
+	font-family: var(--font-stack);
+	font-size: var(--font-large-size);
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--control-button-radius);
+	background-color: var(--control-color-bg-enabled-off);
+	color: var(--color-text);
+	border: none;
+}
+.button-general:hover {
+	background-color: var(--control-color-bg-enabled-off-hover);
+}
+.button-general:hover:active {
+	background-color: var(--control-color-bg-enabled-off-active);
+}
+.button-general:disabled, .button-general:disabled:active {
+	background-color: var(--control-color-bg-disabled-off);
+	color: var(--control-color-text-disabled-off);
+}
+.value-current, .value-current:hover, .value-current:hover:active {
+	background-color: var(--control-color-bg-enabled-on);
+	color: var(--control-color-text-enabled-on);
+}
+.button-general.value-current:disabled, .button-general.value-current:disabled:active {
+	background-color: var(--control-color-bg-disabled-on);
+	color: var(--control-color-text-disabled-on);
+}
+.button-general:focus-visible {
+	outline: none; /* Hide browser focus border */
+	box-shadow: 0 0 0 2px var(--color-text); /* Replace with fake focus border */
+}
+.button-general span { /* For vertical centering */
+	display: block;
+	text-box: trim-both cap alphabetic;
+}
+
+/* Action Buttons */
+
+.button-action {
+	border-radius: calc(var(--fixed-grid-unit) / 2); /* Circular caps */
+}
+button svg path {
+	stroke: currentColor; /* Inhereit text color */
+}
+.hide-button-label {
+	display: none; /* Hide the text label */
+}
+
+/* Toggle Buttons */
+
+.button-toggle input[type=checkbox] { /* Hide the checkbox */
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+.button-toggle { /* Off, Enabled */
+	-webkit-user-select: none; /* Avoid accidental text selection when quickly toggling buttons */
+	user-select: none; /* Avoid accidental text selection when quickly toggling buttons */
+	font-family: var(--font-stack);
+	font-size: var(--font-large-size);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--control-button-radius);
+	background-color: var(--control-color-bg-enabled-off);
+	color: var(--control-color-text-enabled-off);
+}
+.button-toggle:hover { /* Off, Enabled, Hover */
+	background-color: var(--control-color-bg-enabled-off-hover);
+}
+.button-toggle:hover:active { /* Off, Enabled, Hover, Click */
+	background-color: var(--control-color-bg-enabled-off-active);
+}
+.button-toggle:has(:disabled), .button-toggle:has(:disabled):active { /* Off, Disabled and Off, Disabled, Clicked */
+	background-color: var(--control-color-bg-disabled-off);
+	color: var(--control-color-text-disabled-off);
+}
+.button-toggle:has(:checked) { /* On, Enabled */
+	background-color: var(--control-color-bg-enabled-on);
+	color: var(--control-color-text-enabled-on);
+}
+.button-toggle:has(:checked):hover { /* On, Enabled, Hover */
+	background-color: var(--control-color-bg-enabled-on-hover);
+}
+.button-toggle:has(:checked):hover:active { /* On, Enabled, Hover, Click */
+	background-color: var(--control-color-bg-enabled-on-active);
+}
+.button-toggle:has(:focus-visible) {
+	box-shadow: 0 0 0 2px var(--color-text);
+}
+.button-toggle span { /* For vertical centering */
+	display: block;
+	text-box: trim-both cap alphabetic;
+}
+
+/* Text Fields */
+
+input[type=number] {
+	font-family: var(--font-stack);
+	font-size: var(--font-large-size);
+	line-height: var(--fixed-grid-unit); /* Try to keep the text vertically centered */
+	padding-inline-start: calc((var(--fixed-grid-unit) - var(--font-large-size)) / 2); /* Roughly match left padding the the top and bottom space */
+	padding-block: 0; /* This only seems needed for mobile Safari */
+	background-color: var(--control-color-bg-enabled-off);
+	color: var(--color-text);
+	border: none;
+}
+input[type=number]:disabled {
+	background-color: var(--control-color-bg-disabled-off);
+	color: var(--control-color-text-disabled-off);
+}
+input[type=number]:focus-visible {
+	outline: none; /* Hide browser focus border */
+	/* box-shadow: 0 0 0 2px var(--color-text); */ /* Hide for now */
+}
+input[type=number].unresolved {
+	background-color: var(--control-color-bg-enabled-unresolved);
+	color: var(--control-color-text-enabled-unresolved);
+}
+input[type=number].unresolved:disabled {
+	background-color: var(--control-color-bg-disabled-unresolved);
+	color: var(--control-color-text-disabled-unresolved);
+}
+.unresolved {
+	background-color: var(--color-column-unresolved);
+}
+
+/* Grid Preview
+------------------------*/
+
+.grid {
+	min-width: 0; /* Override default grid-width: auto for grid items, allow preview to scale via JS */
+	display: flex;
+	flex-direction: column;
+	border-bottom: 1px solid var(--color-rule);
+	padding-block-end: var(--space-small-gap);
+	overflow: hidden;
+}
+
+/* Grid Preview Heading */
+
+.grid-heading {
+	display: grid;
+	gap: var(--space-tiny-gap);
+	grid-template-columns: repeat(14, var(--fixed-grid-unit)) auto;
+	margin-block-end: var(--space-small-gap);
+}
+#preview-total-width, #preview-inner-width, #preview-scale {
+	font-size: var(--font-small-size);
+	line-height: var(--font-small-line-height);
+	letter-spacing: 2%;
+	margin: 0;
+	text-box: trim-both cap alphabetic;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity var(--transition-fade), visibility var(--transition-fade);
+}
+#preview-total-width {
+	grid-column: 4 / 9;
+}
+#preview-inner-width {
+	grid-column: 9 / 15;
+}
+#preview-scale {
+	grid-column: 15;
+	justify-self: end;
+}
+
+/* Grid Preview */
+
+.grid-preview {
+	flex: 1;
+	min-height: 100px;
+	height: 100%;
+	display: grid;
+	grid-auto-flow: column;
+	background-color: var(--color-gutter-resolved);
+	transition: width var(--transition-grid);
+}
+.inner-grid {
+	justify-content: flex-start;
+	overflow: hidden;
+	transition: column-gap var(--transition-grid), background-color var(--transition-grid);
+}
+/* Applied by JS to suppress all transitions for snap actions (trim and trim undo) */
+.no-transition,
+.no-transition * {
+	transition: none !important;
+}
+.margin-left,
+.margin-right {
+	transition: width var(--transition-grid);
+}
+.column {
+	background-color: var(--color-column-resolved);
+	flex-shrink: 0;
+	transition: width var(--transition-grid), background-color var(--transition-grid);
+}
+.column-alt {
+	background-color: var(--color-gutter-resolved);
+	flex-shrink: 0;
+	transition: width var(--transition-grid), background-color var(--transition-grid);
+}
+.margin {
+	background-color: var(--color-gutter-unresolved);
+}
+
+/* About
+------------------------*/
+
+#about {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	background-color: var(--color-background);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity var(--transition-fade), visibility var(--transition-fade);
+	display: grid;
+	grid-template-columns: repeat(29, var(--fixed-grid-unit)) auto var(--fixed-grid-unit);
+	column-gap: var(--space-tiny-gap);
+	align-content: start; /* Rows are only as large as their children */
+}
+#about.visible {
+	opacity: 1;
+	visibility: visible;
+}
+.about-container, .colophon-container {
+	display: grid;
+	grid-template-columns: subgrid;
+	align-content: start; /* Rows as tall as children */
+}
+.about-container {
+	grid-column: 1 / 16;
+	grid-row: 1;
+}
+.colophon-container {
+	grid-column: 16 / 32;
+	grid-row: 1;
+}
+#about p {
+	font-size: var(--font-large-size);
+	line-height: var(--font-large-line-height);
+	text-box: trim-both cap alphabetic;
+}
+#about p:first-child {
+	margin-block-start: 0.7rem;
+}
+#about-close {
+	justify-self: end;
+	align-self: start;
+	width: var(--fixed-grid-unit);
+	height: var(--fixed-grid-unit);
+	grid-column: 31 / 32;
+	grid-row: 1 / 2;
+	margin-block-start: 32px;
+}
+.about-description, .about-colophon {
+	grid-column-start: span 14;
+}
+.about-colophon-heading {
+	grid-column-start: span 17;
+}
+
+/* About View Adjustment
+========================*/
+
+@media (width <= 937px) { /* Accomdate for the About close button... */
+
+#about {
+	grid-template-columns: repeat(27, var(--fixed-grid-unit)) auto;
+}
+.colophon-container {
+	grid-column: 16 / 30;
+}
+.about-colophon {
+	grid-column-start: span 12;
+}
+.about-colophon-heading {
+	grid-column-start: span 14;
+}
+#about-close {
+	grid-column: 29;
+}
+
+}
+
+/* Vertical Tablet and Horizontal Phone Breakpoint
+========================*/
+
+@media (width <= 900px) { /* 879 is when fixed desktop design doesn't fit anymore, switch to fluid columns */
+
+:root {
+	--space-viewport-margin: 1.2rem;
+}
+
+#about {
+	grid-template-columns: repeat(29, 1fr);
+}
+
+.grid-calculator {
+	grid-template-columns: repeat(29, 1fr);
+}
+.variable-columns, .variable-gutter-width, .variable-state {
+	grid-column-start: span 14;
+}
+.variable-controls {
+	grid-template-rows: var(--flex-grid-unit) var(--flex-grid-unit);
+}
+.grid-state-container {
+	height: var(--flex-grid-unit);
+}
+button svg { 
+	width: calc(var(--flex-grid-unit) * 15 / 27);
+	height: calc(var(--flex-grid-unit) * 15 / 27);
+}
+.grid-state-container svg {
+	height: var(--flex-grid-unit);
+	width: var(--flex-grid-unit);
+}
+.button-general, .button-toggle, input[type=number], .grid-status {
+	--font-large-size: calc(var(--flex-grid-unit) * 18 / 27);
+}
+input[type=number] {
+	padding-inline-start: calc((var(--flex-grid-unit) - var(--font-large-size)) / 2);
+	line-height: var(--flex-grid-unit);
+}
+.button-action {
+	border-radius: calc(var(--flex-grid-unit) / 2);
+}
+.about-colophon {
+	grid-column-start: span 12;
+}
+#about-close {
+	width: var(--flex-grid-unit);
+	height: var(--flex-grid-unit);
+}
+
+}
+
+/* Vertical Phone Breakpoint
+========================*/
+
+@media (width <= 600px) { /* The point at which the design gets too small for two columns */
+
+.grid-calculator {
+	grid-template-columns: repeat(14, 1fr); /* One column of grid variables */
+}
+.grid-variable {
+	grid-column-start: span 14;
+}
+.variable-total-width .variable-heading, .variable-column-width .variable-heading, .variable-margin .variable-heading {
+	margin-inline-end: 0;
+}
+.grid-heading {
+	gap: 0;
+	grid-template-columns: repeat(4, auto);
+	justify-content: space-between;
+}
+.grid-heading .variable-heading {
+	grid-column: initial;
+}
+#preview-total-width {
+	grid-column: initial;
+}
+#preview-inner-width {
+	grid-column: initial;
+}
+#preview-scale {
+	grid-column: initial;
+}
+#about {
+	grid-template-columns: initial;
+}
+.about-container {
+	grid-column: initial;
+	grid-row: initial;
+}
+.about-description, .about-colophon {
+	grid-column-start: initial;
+}
+.colophon-container {
+	grid-column: initial;
+	grid-row: initial;
+}
+.about-colophon-heading {
+	grid-column-start: initial;
+}
+#about .variable-heading {
+	grid-column: initial;
+}
+.about-description, .about-colophon {
+	grid-column-start: initial;
+}
+#about p {
+	margin-block-end: var(--space-large-gap);
+}
+#about-close {
+	grid-column: initial;
+	justify-self: initial;
+	align-self: initial;
+	grid-column: initial;
+	grid-row: initial;
+	margin-block-start: initial;
+}
+#about p {
+	--font-large-size: calc(var(--flex-grid-unit) * 18 / 27);
+}
+
+}
