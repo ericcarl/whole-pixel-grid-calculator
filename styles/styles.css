@@ -607,7 +607,7 @@ button svg {
 	width: var(--flex-grid-unit);
 }
 .button-general, .button-toggle, input[type=number], .grid-status {
-	--font-large-size: calc(var(--flex-grid-unit) * 18 / 27);
+	--font-large-size: max(1.6rem, calc(var(--flex-grid-unit) * 18 / 27)); /* Min size of 16px to prevent iOS zoom when inputting values */
 }
 input[type=number] {
 	padding-inline-start: calc((var(--flex-grid-unit) - var(--font-large-size)) / 2);
