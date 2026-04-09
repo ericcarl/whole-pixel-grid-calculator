@@ -19,7 +19,7 @@
 	--font-large-line-height: calc(22 / 18 * 1em); /* Could do 1.222... but this is more consistent across browsers */
 	/* Spacing */
 	--space-viewport-margin: 2rem;
-	--space-large-gap: 3.5rem;
+	--space-large-gap: 2.8rem;
 	--space-small-gap: 0.4rem;
 	--space-tiny-gap: 0.2rem;
 	/* Control Shapes */
@@ -35,14 +35,14 @@
 	--control-color-bg-enabled-on-active: #232323;
 	--control-color-bg-disabled-off: #E0E0E0;
 	--control-color-bg-disabled-on: #B9B9B9;
-	--control-color-bg-disabled-unresolved: #DAB3AD;
+	--control-color-bg-disabled-unresolved: #E99A8E;
 	/* Control Text Colors */
 	--control-color-text-enabled-off: #232323;
 	--control-color-text-enabled-on: #FFFFFF;
 	--control-color-text-enabled-unresolved: #FFFFFF;
 	--control-color-text-disabled-off: #999999;
 	--control-color-text-disabled-on: #DBDBDB;
-	--control-color-text-disabled-unresolved: #EDE0DE;
+	--control-color-text-disabled-unresolved: #F7D9D4;
 		/* Transitions */
 	--transition-grid: 0.12s ease;
 	--transition-fade: 0.15s;

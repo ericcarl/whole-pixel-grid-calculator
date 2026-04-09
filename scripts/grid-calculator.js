@@ -312,11 +312,7 @@
                 if (lastTyped !== 'gutter') gutterInput.classList.add('unresolved');
                 if (lastTyped !== 'margin') marginInput.classList.add('unresolved');
             } else {
-                if (lastTyped !== 'width')  totalWidthInput.classList.add('unresolved');
-                if (lastTyped !== 'count')  countInput.classList.add('unresolved');
-                if (lastTyped !== 'column') colWidthInput.classList.add('unresolved');
-                if (lastTyped !== 'gutter') gutterInput.classList.add('unresolved');
-                if (lastTyped !== 'margin') marginInput.classList.add('unresolved');
+                colWidthInput.classList.add('unresolved');
             }
         }
 
