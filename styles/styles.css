@@ -532,9 +532,6 @@ input[type=number].unresolved:disabled {
 	line-height: var(--font-large-line-height);
 	text-box: trim-both cap alphabetic;
 }
-#about p:first-child {
-	margin-block-start: 0.7rem;
-}
 #about-close {
 	justify-self: end;
 	align-self: start;
