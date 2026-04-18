@@ -226,8 +226,10 @@
 
         // Suppress transitions when column count changes — a reshuffled layout
         // shouldn't animate; snap it, then re-enable for future changes.
+        // Suppress structural transitions when column count changes — a reshuffled layout
+        // shouldn't animate; snap it, then re-enable for future changes.
         const countChanged = innerGridDiv._colCount !== null && innerGridDiv._colCount !== columnCount;
-        if (countChanged) innerGridDiv.classList.add('no-transition');
+        if (countChanged) innerGridDiv.classList.add('snap-layout');
 
         innerGridDiv.style.columnGap = gutterWidth + 'px';
 
@@ -244,7 +246,7 @@
         });
 
         innerGridDiv._colCount = columnCount;
-        if (countChanged) requestAnimationFrame(() => innerGridDiv.classList.remove('no-transition'));
+        if (countChanged) requestAnimationFrame(() => innerGridDiv.classList.remove('snap-layout'));
 
         updatePreviewScale();
     }

@@ -476,6 +476,11 @@ input[type=number].unresolved:disabled {
 .no-transition * {
 	transition: none !important;
 }
+/* Applied by JS when column count changes — snaps structural transitions, preserves background-color fade */
+.snap-layout,
+.snap-layout * {
+	transition-property: background-color !important;
+}
 .margin-left,
 .margin-right {
 	transition: width var(--transition-grid);
@@ -513,6 +518,9 @@ input[type=number].unresolved:disabled {
 #about.visible {
 	opacity: 1;
 	visibility: visible;
+}
+.stick-me {
+	display: contents; /* Act like the element doesn't exist until the mobile breakpoint */
 }
 .about-container, .colophon-container {
 	display: grid;
@@ -657,6 +665,11 @@ input[type=number] {
 }
 #about {
 	grid-template-columns: initial;
+}
+.stick-me { /* Wrapper needed to make About sticky because position: absolute on #about is alrady being used to position it and the grid calculator in the same location */
+	display: block; /* Override display: contents at larger breakpoint */
+	position: sticky;
+	top: 12px;
 }
 .about-container {
 	grid-column: initial;
