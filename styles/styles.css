@@ -218,10 +218,6 @@ header {
 .button-auto {
 	grid-column: span 2;
 }
-.button-manual {
-	visibility: hidden; /* Hide it because this mode may not be useful */
-	grid-column: span 3;
-}
 .button-match-gutter {
 	grid-column: span 5;
 }

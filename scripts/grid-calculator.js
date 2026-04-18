@@ -7,7 +7,6 @@
     let gutterWidth = 18;
     let marginWidth = 0;
     let lastTyped      = 'width'; // most recently manually typed field
-    let colWidthManual    = false;
     let colWidthAuto   = true;
     let matchGutter    = false;
     let savedMarginWidth = null; // margin value before Match Gutter was enabled
@@ -29,7 +28,6 @@
     const countPrev      = document.getElementById('column-count-prev');
     const countNext      = document.getElementById('column-count-next');
     const colWidthAutoCheck = document.getElementById('column-width-auto');
-    const colWidthManualCheck      = document.getElementById('column-width-manual');
     const colWidthPrev   = document.getElementById('column-width-prev');
     const colWidthNext   = document.getElementById('column-width-next');
     const gutterPrev     = document.getElementById('gutter-width-prev');
@@ -72,8 +70,6 @@
         const iW = innerWidth();
         const inner = iW - (columnCount - 1) * gutterWidth;
         if (inner <= 0) return false;
-        // When locked, verify the exact locked colWidth satisfies the formula.
-        if (colWidthManual) return inner === columnCount * colWidth;
         return inner % columnCount === 0;
     }
 
@@ -272,10 +268,10 @@
         // Match Gutter syncs margin to gutter before any calculations.
         if (matchGutter) marginWidth = gutterWidth;
 
-        if (!colWidthAuto && (lastTyped === 'column' || lastTyped === 'margin' || lastTyped === 'gutter' || lastTyped === 'count') && !colWidthManual) {
-            // Manual mode: c is the driver — recalculate W so the constraint always holds.
+        if (!colWidthAuto && (lastTyped === 'column' || lastTyped === 'margin' || lastTyped === 'gutter' || lastTyped === 'count')) {
+            // Auto off: c is the driver — recalculate W so the constraint always holds.
             gridWidth = columnCount * colWidth + (columnCount - 1) * gutterWidth + 2 * marginWidth;
-        } else if (!colWidthManual) {
+        } else {
             // W, n, g, or m is the driver: derive c.
             colWidth = (innerWidth() - (columnCount - 1) * gutterWidth) / columnCount;
             // Clamp: ensure colWidth ≥ 1 by pulling margin (and gutter if Match Gutter) back.
@@ -289,8 +285,6 @@
                 colWidth = (innerWidth() - (columnCount - 1) * gutterWidth) / columnCount;
             }
         }
-        // else colWidthManual: both W and c are fixed — explore n/g/m
-
         const wholePx = isWholePixel();
         gridStatusResolved.classList.toggle('visible', wholePx);
         gridStatusUnresolved.classList.toggle('visible', !wholePx);
@@ -308,50 +302,14 @@
             el.classList.remove('unresolved'));
 
         if (!wholePx) {
-            if (colWidthManual) {
-                // W and c are both fixed — highlight the free variables unless just typed.
-                if (lastTyped !== 'count')  countInput.classList.add('unresolved');
-                if (lastTyped !== 'gutter') gutterInput.classList.add('unresolved');
-                if (lastTyped !== 'margin') marginInput.classList.add('unresolved');
-            } else {
-                colWidthInput.classList.add('unresolved');
-            }
+            colWidthInput.classList.add('unresolved');
         }
 
-        // Compute locked-mode solving values once — used by both renderOptions and disabled states.
-        // NaN means no valid integer solution for that variable given the other current values.
-        let lockedWOpt = NaN, lockedNOpt = NaN, lockedGOpt = NaN, lockedMOpt = NaN;
-        if (colWidthManual) {
-            lockedWOpt = columnCount * colWidth + (columnCount - 1) * gutterWidth + 2 * marginWidth;
-            const cg   = colWidth + gutterWidth;
-            const rawN = cg > 0 ? (innerWidth() + gutterWidth) / cg : NaN;
-            if (Number.isInteger(rawN) && rawN >= 1) lockedNOpt = rawN;
-            if (matchGutter) {
-                const rawG = (gridWidth - columnCount * colWidth) / (columnCount + 1);
-                if (Number.isInteger(rawG) && rawG >= 0) lockedGOpt = rawG;
-            } else {
-                const rawG = columnCount > 1 ? (innerWidth() - columnCount * colWidth) / (columnCount - 1) : NaN;
-                if (Number.isInteger(rawG) && rawG >= 0) lockedGOpt = rawG;
-                const rawM = (gridWidth - columnCount * colWidth - (columnCount - 1) * gutterWidth) / 2;
-                if (Number.isInteger(rawM) && rawM >= 0) lockedMOpt = rawM;
-            }
-        }
-
-        // Only compute the valid margin list when it's needed (unlocked, non-matchGutter path).
-        const validMarginList = (!colWidthManual && !matchGutter)
+        // Only compute the valid margin list when it's needed (non-matchGutter path).
+        const validMarginList = !matchGutter
             ? getValidMarginList(columnCount, gutterWidth) : null;
 
-        if (colWidthManual) {
-            renderOptions(totalWidthValues,  [lockedWOpt], cur.width);
-            renderOptions(countValues,  isNaN(lockedNOpt) ? [] : [lockedNOpt], cur.count);
-            colWidthValues.innerHTML = '';
-            renderOptions(gutterValues, isNaN(lockedGOpt) ? [] : [lockedGOpt], cur.gutter);
-            if (matchGutter) {
-                marginValues.innerHTML = '';
-            } else {
-                renderOptions(marginValues, isNaN(lockedMOpt) ? [] : [lockedMOpt], cur.margin);
-            }
-        } else if (!colWidthAuto) {
+        if (!colWidthAuto) {
             renderOptions(totalWidthValues,    validGridWidthsNear(columnCount, gutterWidth, gridWidth), cur.width);
             renderOptions(countValues,    intOptionsNear(columnCount, 7, 1), cur.count);
             renderOptions(colWidthValues, colWidthOptionsNear(colWidth), cur.col);
@@ -376,14 +334,11 @@
             ? gridWidth - columnCount
             : Math.floor((gridWidth - wBase) / columnCount) * columnCount + wBase;
         totalWidthInput.disabled = false;
-        totalWidthPrev.disabled = colWidthManual ? true : wPrevVal < wMinimum;
-        totalWidthNext.disabled = colWidthManual ? true : false;
+        totalWidthPrev.disabled = wPrevVal < wMinimum;
+        totalWidthNext.disabled = false;
         totalWidthValues.querySelectorAll('button').forEach(btn => btn.disabled = false);
 
-        if (colWidthManual) {
-            countPrev.disabled = true;
-            countNext.disabled = true;
-        } else if (!colWidthAuto) {
+        if (!colWidthAuto) {
             countPrev.disabled = columnCount <= 1;
             countNext.disabled = false;
         } else {
@@ -394,16 +349,12 @@
         }
 
         const cPrevVal = Number.isInteger(colWidth) ? colWidth - 1 : Math.floor(colWidth);
-        colWidthPrev.disabled  = colWidthAuto || colWidthManual || cPrevVal < 1;
-        colWidthNext.disabled  = colWidthAuto || colWidthManual;
+        colWidthPrev.disabled  = colWidthAuto || cPrevVal < 1;
+        colWidthNext.disabled  = colWidthAuto;
         colWidthInput.disabled = colWidthAuto;
-        colWidthManualCheck.disabled  = colWidthAuto;
         colWidthValues.querySelectorAll('button').forEach(btn => btn.disabled = colWidthAuto);
 
-        if (colWidthManual) {
-            gutterPrev.disabled = true;
-            gutterNext.disabled = true;
-        } else if (!colWidthAuto) {
+        if (!colWidthAuto) {
             gutterPrev.disabled = gutterWidth <= 0;
             gutterNext.disabled = false;
         } else {
@@ -417,7 +368,7 @@
         marginTrim.disabled  = marginWidth === 0 || gridWidth - 2 * marginWidth < columnCount + (columnCount - 1) * gutterWidth;
         marginInput.disabled = matchGutter;
         marginValues.querySelectorAll('button').forEach(btn => btn.disabled = matchGutter);
-        if (matchGutter || colWidthManual) {
+        if (matchGutter) {
             marginPrev.disabled = true;
             marginNext.disabled = true;
         } else if (!colWidthAuto) {
@@ -436,7 +387,7 @@
 
     function pushHistory(noTransitionOnUndo = false) {
         history.push({ gridWidth, columnCount, colWidth, gutterWidth, marginWidth,
-                       lastTyped, colWidthManual, colWidthAuto, matchGutter, noTransitionOnUndo });
+                       lastTyped, colWidthAuto, matchGutter, noTransitionOnUndo });
         if (history.length > 100) history.shift();
     }
 
@@ -446,10 +397,8 @@
         if (s.noTransitionOnUndo) skipNextTransition = true;
         gridWidth = s.gridWidth; columnCount = s.columnCount; colWidth = s.colWidth;
         gutterWidth = s.gutterWidth; marginWidth = s.marginWidth; lastTyped = s.lastTyped;
-        colWidthManual = s.colWidthManual;
         colWidthAuto = s.colWidthAuto; matchGutter = s.matchGutter;
         colWidthAutoCheck.checked = colWidthAuto;
-        colWidthManualCheck.checked      = colWidthManual;
         marginMatchGutter.checked = matchGutter;
         refresh();
     }
@@ -467,9 +416,7 @@
             if (!colWidthAuto && !Number.isInteger(colWidth)) colWidth = Math.round(colWidth);
         } else if (container === colWidthValues) {
             colWidth = val;
-            if (!colWidthManual) {
-                gridWidth = columnCount * colWidth + (columnCount - 1) * gutterWidth + 2 * marginWidth;
-            }
+            gridWidth = columnCount * colWidth + (columnCount - 1) * gutterWidth + 2 * marginWidth;
         } else if (container === gutterValues) {
             gutterWidth = val;
             lastTyped = 'gutter';
@@ -518,15 +465,11 @@
 
     totalWidthPrev.addEventListener('click', () => {
         pushHistory();
-        if (colWidthManual) {
-            gridWidth = Math.max(1, gridWidth - 1);
+        const n = columnCount, base = (n - 1) * gutterWidth + 2 * marginWidth;
+        if ((gridWidth - base) % n === 0) {
+            gridWidth = Math.max(base + n, gridWidth - n);
         } else {
-            const n = columnCount, base = (n - 1) * gutterWidth + 2 * marginWidth;
-            if ((gridWidth - base) % n === 0) {
-                gridWidth = Math.max(base + n, gridWidth - n);
-            } else {
-                gridWidth = Math.max(base + n, Math.floor((gridWidth - base) / n) * n + base);
-            }
+            gridWidth = Math.max(base + n, Math.floor((gridWidth - base) / n) * n + base);
         }
         lastTyped = 'width';
         refresh();
@@ -534,24 +477,18 @@
 
     totalWidthNext.addEventListener('click', () => {
         pushHistory();
-        if (colWidthManual) {
-            gridWidth += 1;
-        } else {
-            const n = columnCount, base = (n - 1) * gutterWidth + 2 * marginWidth;
-            const next = (gridWidth - base) % n === 0
-                ? gridWidth + n
-                : Math.ceil((gridWidth - base) / n) * n + base;
-            gridWidth = Math.max(next, base + n);
-        }
+        const n = columnCount, base = (n - 1) * gutterWidth + 2 * marginWidth;
+        const next = (gridWidth - base) % n === 0
+            ? gridWidth + n
+            : Math.ceil((gridWidth - base) / n) * n + base;
+        gridWidth = Math.max(next, base + n);
         lastTyped = 'width';
         refresh();
     });
 
     countPrev.addEventListener('click', () => {
         pushHistory();
-        if (colWidthManual) {
-            columnCount = Math.max(1, columnCount - 1);
-        } else if (!colWidthAuto) {
+        if (!colWidthAuto) {
             columnCount = Math.max(1, columnCount - 1);
             lastTyped = 'count';
             if (!Number.isInteger(colWidth)) colWidth = Math.round(colWidth);
@@ -570,9 +507,7 @@
 
     countNext.addEventListener('click', () => {
         pushHistory();
-        if (colWidthManual) {
-            columnCount += 1;
-        } else if (!colWidthAuto) {
+        if (!colWidthAuto) {
             columnCount += 1;
             lastTyped = 'count';
             if (!Number.isInteger(colWidth)) colWidth = Math.round(colWidth);
@@ -593,22 +528,20 @@
         pushHistory();
         colWidth = Number.isInteger(colWidth) ? colWidth - 1 : Math.floor(colWidth);
         colWidth = Math.max(1, colWidth);
-        if (!colWidthManual) gridWidth = columnCount * colWidth + (columnCount - 1) * gutterWidth + 2 * marginWidth;
+        gridWidth = columnCount * colWidth + (columnCount - 1) * gutterWidth + 2 * marginWidth;
         refresh();
     });
 
     colWidthNext.addEventListener('click', () => {
         pushHistory();
         colWidth = Number.isInteger(colWidth) ? colWidth + 1 : Math.ceil(colWidth);
-        if (!colWidthManual) gridWidth = columnCount * colWidth + (columnCount - 1) * gutterWidth + 2 * marginWidth;
+        gridWidth = columnCount * colWidth + (columnCount - 1) * gutterWidth + 2 * marginWidth;
         refresh();
     });
 
     gutterPrev.addEventListener('click', () => {
         pushHistory();
-        if (colWidthManual) {
-            gutterWidth = Math.max(0, gutterWidth - 1);
-        } else if (!colWidthAuto) {
+        if (!colWidthAuto) {
             gutterWidth = Math.max(0, gutterWidth - 1);
             lastTyped = 'gutter';
             if (!Number.isInteger(colWidth)) colWidth = Math.round(colWidth);
@@ -627,9 +560,7 @@
 
     gutterNext.addEventListener('click', () => {
         pushHistory();
-        if (colWidthManual) {
-            gutterWidth += 1;
-        } else if (!colWidthAuto) {
+        if (!colWidthAuto) {
             gutterWidth += 1;
             lastTyped = 'gutter';
             if (!Number.isInteger(colWidth)) colWidth = Math.round(colWidth);
@@ -648,9 +579,7 @@
 
     marginPrev.addEventListener('click', () => {
         pushHistory();
-        if (colWidthManual) {
-            marginWidth = Math.max(0, marginWidth - 1);
-        } else if (!colWidthAuto) {
+        if (!colWidthAuto) {
             marginWidth = Math.max(0, marginWidth - 1);
             lastTyped = 'margin';
             if (!Number.isInteger(colWidth)) colWidth = Math.round(colWidth);
@@ -669,9 +598,7 @@
 
     marginNext.addEventListener('click', () => {
         pushHistory();
-        if (colWidthManual) {
-            marginWidth += 1;
-        } else if (!colWidthAuto) {
+        if (!colWidthAuto) {
             marginWidth += 1;
             lastTyped = 'margin';
             if (!Number.isInteger(colWidth)) colWidth = Math.round(colWidth);
@@ -691,14 +618,6 @@
     colWidthAutoCheck.addEventListener('change', () => {
         pushHistory();
         colWidthAuto = colWidthAutoCheck.checked;
-        if (colWidthAuto) { colWidthManual = false; colWidthManualCheck.checked = false; }
-        refresh();
-    });
-
-    colWidthManualCheck.addEventListener('change', () => {
-        pushHistory();
-        colWidthManual = colWidthManualCheck.checked;
-        if (colWidthManual) { colWidthAuto = false; colWidthAutoCheck.checked = false; }
         refresh();
     });
 
@@ -776,7 +695,6 @@
 
     // ── Init ───────────────────────────────────────────────────────────────────
     colWidthAutoCheck.checked    = colWidthAuto;
-    colWidthManualCheck.checked  = colWidthManual;
     marginMatchGutter.checked    = matchGutter;
     refresh();
 
