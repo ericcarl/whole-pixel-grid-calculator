@@ -65,6 +65,13 @@
 	font-style: normal;
 	font-display: fallback;
 }
+@font-face {
+	font-family: Booton;
+	src: url('Booton-Bold.woff2') format('woff2');
+	font-weight: 700;
+	font-style: normal;
+	font-display: fallback;
+}
 html {
 	font-size: 62.5%; /* Base font size of 10 pixels */
 	font-family: var(--font-stack);
@@ -73,11 +80,16 @@ html {
 	-moz-osx-font-smoothing: grayscale;
 }
 h1 {
-	font-size: var(--font-small-size);
+	font-size: var(--font-large-size);
 	margin: 0;
 	text-box: trim-both cap alphabetic;
-	letter-spacing: 1%;
-	align-self: end;
+	font-weight: 700;
+	letter-spacing: -1.5%;
+}
+.tm {
+	font-size: 0.75em;
+	vertical-align: 0.225em;
+	padding-inline-start: 0.075em;
 }
 .variable-heading {
 	font-size: var(--font-small-size);
@@ -125,8 +137,15 @@ main {
 	row-gap: var(--space-large-gap);
 	min-height: 0;
 }
-.calculator-container { /* Needed for toggling visibility of About section */
-	position: relative;
+.calculator-container { /* Stacks #about on top of .grid-calculator so it can grow to fit whichever is taller */
+	position: relative; /* Required for #about while position: absolute (hidden state) */
+	display: grid;
+	grid-template-columns: 1fr;
+}
+.calculator-container #about,
+.calculator-container .grid-calculator { /* Occupy the same space */
+	grid-column: 1;
+	grid-row: 1;
 }
 
 /* Header */
@@ -134,10 +153,9 @@ main {
 header {
 	grid-row: 2;
 	display: grid;
-	grid-template-columns: 0.9rem auto auto;
-	align-content: end;
-	height: 0.8rem;
-	column-gap: 0.7rem;
+	grid-template-columns: 1.9rem auto auto;
+	align-items: center;
+	column-gap: 0.5rem;
 }
 .dot {
 	background-color: var(--color-text);
@@ -154,15 +172,15 @@ header {
 	margin-inline-start: auto;
 	background: none;
 	border: none;
-	font-weight: bold;
 	border-radius: 0;
 	padding: 0;
-	font-size: var(--font-small-size);
+	font-size: var(--font-large-size);
 	text-box: trim-both cap alphabetic;
 	text-decoration: underline;
+	text-decoration-thickness: 1px;
 	text-underline-offset: 2px;
 	cursor: pointer;
-	letter-spacing: 1%;
+	letter-spacing: -1%;
 	color: var(--color-text);
 }
 .about-link span {
@@ -188,7 +206,8 @@ header {
 }
 .variable-total-width .variable-heading,
 .variable-column-width .variable-heading,
-.variable-margin .variable-heading { /* Pull the right side over 2px to remove the gap between lines */
+.variable-margin .variable-heading,
+.about-container .variable-heading { /* Pull the right side over 2px to remove the gap between lines */
 	margin-inline-end: calc(-1 * var(--space-tiny-gap));
 }
 .values {
@@ -220,6 +239,12 @@ header {
 }
 .button-match-gutter {
 	grid-column: span 5;
+	container-type: inline-size;
+}
+@container (width < 114px){ /* Shrink the font to fit */
+	.button-match-gutter span {
+		font-size: 1.3rem;
+	}
 }
 .button-trim {
 	grid-column: span 2;
@@ -499,7 +524,7 @@ input[type=number].unresolved:disabled {
 ------------------------*/
 
 #about {
-	position: absolute;
+	position: absolute; /* Out of flow while hidden, so it doesn't affect .calculator-container's height */
 	inset: 0;
 	z-index: 1;
 	background-color: var(--color-background);
@@ -510,6 +535,9 @@ input[type=number].unresolved:disabled {
 	grid-template-columns: repeat(29, var(--fixed-grid-unit)) auto var(--fixed-grid-unit);
 	column-gap: var(--space-tiny-gap);
 	align-content: start; /* Rows are only as large as their children */
+}
+#about.visible {
+	position: static; /* Back in flow so .calculator-container grows to fit it when shown */
 }
 #about.visible {
 	opacity: 1;
